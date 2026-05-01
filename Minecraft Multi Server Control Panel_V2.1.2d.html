@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+!! PER UN CORRETTO FUNZIONAMENTO DEL SITO RICORDATI DI INSTALLARE ED ATTIVARE LE ESTENSIONI RICHIESTE !!
+<!--
+    ============================================================
+    Minecraft server control panel - Pannello di gestione server Minecraft
+    ============================================================
+    Versione:    2.1.2d
+    Autore:      PiBOH
+    Motore:      HTML5 + CSS3 + JavaScript ES2020 (vanilla)
+    Framework:   Tailwind CSS v4 (CDN browser runtime)
+    Descrizione: Pannello multipiattaforma per controllare
+                 server Minecraft tramite API ufficiali degli
+                 hosting (Pterodactyl, Pelican, custom).
+                 Nessun server locale, nessun proxy esterno,
+                 nessuna installazione richiesta.
+    ============================================================
+    ESTENSIONI BROWSER PER BYPASS CORS (usare solo durante lo
+    sviluppo / test, non in produzione per motivi di sicurezza):
+    ============================================================
+    Chrome / Edge / Brave / Vivaldi / Opera (Chromium):
+      - CORS Unblock
+        https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino
+      - Allow CORS: Access-Control-Allow-Origin
+        https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf
+    Firefox:
+      - CORS Unblock
+        https://addons.mozilla.org/firefox/addon/cors-unblock/
+      - CORS Everywhere
+        https://addons.mozilla.org/firefox/addon/cors-everywhere/
+    ============================================================
+-->
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft server control panel | based on the server API</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 14% 12%, rgba(34, 197, 94, 0.24), transparent 30rem),
+                radial-gradient(circle at 85% 8%, rgba(59, 130, 246, 0.18), transparent 28rem),
+                linear-gradient(145deg, #06110b 0%, #0b1220 52%, #06080d 100%);
+        }
+
+        .surface {
+            background: rgba(8, 13, 22, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(18px);
+        }
+
+        .soft-line {
+            background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.7), transparent);
+            height: 1px;
+        }
+
+        .float-in {
+            animation: floatIn 700ms ease both;
+        }
+
+        .slow-glow {
+            animation: slowGlow 5s ease-in-out infinite alternate;
+        }
+
+        .slide-up {
+            animation: slideUp 520ms ease both;
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes slowGlow {
+            from { filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.18)); }
+            to { filter: drop-shadow(0 0 30px rgba(34, 197, 94, 0.38)); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-100 antialiased">
+    <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+        <header class="float-in flex flex-col gap-5 py-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Minecraft server control panel</p>
+                <h1 class="mt-3 max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">Gestione server Minecraft da un solo HTML</h1>
+                    <p class="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">Un file piccolo ma Potente per gestire i tuoi server minecraft</p>
+                    <p class="mt-3 max-w-2xl text-sm leading-6 text-amber-200/90"><span class="font-bold">N.B.</span> Vedrai i tuoi server solo se usi ogni volta lo stesso browser e se non pulisci la cache di quest'ultimo, Ricordati di fare sempre un backup della serverlist e delle API</p>
+            </div>
+            <div class="surface slow-glow max-w-md rounded-3xl p-5 text-sm leading-6 text-slate-300">
+                <p class="font-semibold text-white">Regola tecnica non aggirabile</p>
+                <p class="mt-2">Da un file HTML il browser puo chiamare solo API che permettono CORS per origine <span class="font-mono text-emerald-200">null</span> o per il dominio da cui apri la pagina. Se l'host non lo permette, nessun codice HTML puo bypassarlo senza proxy, estensione o app installata.</p>
+
+                <div class="soft-line my-5"></div>
+
+                <h2 class="text-xl font-bold text-white">Estensioni <span class="rounded-full bg-red-400 px-2 py-1 align-middle text-[10px] font-black uppercase tracking-wide text-slate-950">NECESSARIE</span></h2>
+                <div class="mt-4 rounded-2xl bg-slate-950/60 p-4 ring-1 ring-slate-700">
+                    <p class="font-semibold text-white text-sm">Estensioni per bypass CORS</p>
+                    <p class="mt-1 text-xs text-slate-400">Se il tuo hosting blocca CORS, queste estensioni permettono di sbloccarlo temporaneamente. Usale solo durante il test, non in produzione.</p>
+
+                    <p class="mt-3 text-xs font-semibold text-slate-300">Chrome / Edge / Brave / Vivaldi / Opera</p>
+                    <ul class="mt-1 space-y-1 text-xs pl-4">
+                        <li><a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino" target="_blank" rel="noreferrer" class="text-emerald-200 underline decoration-emerald-200/30 hover:text-emerald-100">CORS Unblock</a></li>
+                        <li><a href="https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf" target="_blank" rel="noreferrer" class="text-emerald-200 underline decoration-emerald-200/30 hover:text-emerald-100">Allow CORS: Access-Control-Allow-Origin</a></li>
+                    </ul>
+
+                    <p class="mt-3 text-xs font-semibold text-slate-300">Firefox</p>
+                    <ul class="mt-1 space-y-1 text-xs pl-4">
+                        <li><a href="https://addons.mozilla.org/firefox/addon/cors-everywhere/" target="_blank" rel="noreferrer" class="text-emerald-200 underline decoration-emerald-200/30 hover:text-emerald-100">CORS Everywhere</a> <span class="ml-1 rounded-full bg-emerald-400 px-2 py-0.5 align-middle text-[9px] font-black uppercase tracking-wide text-slate-950">Testata e Consigliata</span></li>
+                        <li><a href="https://addons.mozilla.org/firefox/addon/cors-unblock/" target="_blank" rel="noreferrer" class="text-emerald-200 underline decoration-emerald-200/30 hover:text-emerald-100">CORS Unblock</a></li>
+                    </ul>
+                </div>
+
+                <div class="soft-line my-5"></div>
+
+                <h2 class="text-xl font-bold text-white">Informazioni sul sito</h2>
+                <div class="mt-3 space-y-1 text-xs text-slate-400">
+                    <p>Versione: <span class="font-mono text-emerald-200">2.1.2d</span></p>
+                    <p>Autore: <span class="text-white">PiBOH</span></p>
+                    <p>Motore: <span class="text-white">HTML5 + CSS3 + JavaScript ES2020 (vanilla)</span></p>
+                    <p>Framework CSS: <span class="text-white">Tailwind CSS v4 (CDN)</span></p>
+                </div>
+            </div>
+        </header>
+
+        <div class="soft-line my-5"></div>
+
+        <section class="slide-up grid gap-4 lg:grid-cols-[1fr_360px]">
+            <div class="surface rounded-3xl p-4 sm:p-6">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Server salvati</h2>
+                        <p class="mt-1 text-sm text-slate-400">Non vengono creati server finti. Ogni pulsante invia una richiesta reale all'API configurata.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="addServerBtn" class="rounded-full bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-200">Aggiungi server</button>
+                        <button id="linkServerListBtn" class="rounded-full border border-emerald-300/60 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/10">Collega serverlist</button>
+                        <button id="saveServerListBtn" class="rounded-full border border-emerald-300/60 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/10">Salva serverlist</button>
+                        <button id="exportBtn" class="rounded-full border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400">Esporta API dei server</button>
+                        <label class="cursor-pointer rounded-full border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-400">
+                            Importa API dei server
+                            <input id="importInput" type="file" accept="application/json" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <div id="emptyState" class="mt-10 hidden rounded-3xl border border-dashed border-slate-700 p-8 text-center">
+                    <p class="text-xl font-bold text-white">Nessun server aggiunto</p>
+                    <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-400">Aggiungi un host con API ufficiale, per esempio un pannello Pterodactyl/Pelican o un endpoint API personalizzato fornito dal tuo hosting.</p>
+                </div>
+
+                <div id="storageStatus" class="mt-5 rounded-2xl bg-slate-950/45 p-4 text-sm text-slate-300 ring-1 ring-slate-700"></div>
+                <div id="externalFileStatus" class="mt-3 rounded-2xl bg-slate-950/45 p-4 text-sm text-slate-300 ring-1 ring-slate-700"></div>
+
+                <div id="serverList" class="mt-6 grid gap-4 xl:grid-cols-2"></div>
+            </div>
+
+            <aside class="surface rounded-3xl p-5 text-sm leading-6 text-slate-300">
+                <h2 class="text-xl font-bold text-white">Compatibilita reale</h2>
+                <p class="mt-3">Funziona aprendo il file su Windows e macOS se l'API dell'hosting:</p>
+                <ul class="mt-3 list-disc space-y-2 pl-5 text-slate-300">
+                    <li>accetta richieste da browser;</li>
+                    <li>permette CORS per <span class="font-mono text-emerald-200">file://</span> oppure per il dominio usato;</li>
+                    <li>accetta token via header, di solito <span class="font-mono text-emerald-200">Authorization: Bearer</span>;</li>
+                    <li>fornisce endpoint reali per start, stop e status.</li>
+                </ul>
+                <div class="mt-5 rounded-2xl bg-amber-500/10 p-4 text-amber-100 ring-1 ring-amber-400/20">
+                    <p class="font-semibold">Aternos e host senza API pubblica</p>
+                    <p class="mt-2">Se l'host non offre una API ufficiale controllabile dal browser, questo file non puo avviare o spegnere il server senza usare un servizio intermedio. Per correttezza non ho aggiunto comandi finti.</p>
+                </div>
+                <div class="mt-5 rounded-2xl bg-sky-500/10 p-4 text-sky-100 ring-1 ring-sky-400/20">
+                    <p class="font-semibold">Se dice che non riesce a connettersi</p>
+                    <p class="mt-2">Non significa per forza che internet non funziona. Nei browser lo stesso errore appare anche quando l'host blocca CORS, rifiuta l'header Authorization o non risponde alla richiesta OPTIONS.</p>
+                </div>
+                <div class="mt-5 rounded-2xl bg-red-500/10 p-4 text-red-100 ring-1 ring-red-400/20">
+                    <p class="font-semibold">Errore proxy CORS</p>
+                    <p class="mt-2">Se vedi un messaggio sui proxy CORS, non e un problema di AdBlock: significa che stai usando una versione/prova con proxy esterni oppure che l'host non permette chiamate API dal browser. Questa versione non usa proxy pubblici.</p>
+                </div>
+                <div class="mt-5 rounded-2xl bg-purple-500/10 p-4 text-purple-100 ring-1 ring-purple-400/20">
+                    <p class="font-semibold">Cambiare browser non basta</p>
+                    <p class="mt-2">Chrome, Edge, Vivaldi, Brave e Opera usano tutti Chromium e applicano le stesse regole CORS. Se falliscono tutti, il blocco e lato host/API, non lato PC.</p>
+                </div>
+                <button id="clearBtn" class="mt-5 w-full rounded-full border border-red-400/40 px-4 py-3 font-semibold text-red-100 transition hover:bg-red-500/10">Cancella dati locali</button>
+             </aside>
+        </section>
+    </main>
+
+    <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4">
+        <div class="surface max-h-[92vh] w-full max-w-7xl overflow-y-auto rounded-3xl p-5 sm:p-7">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 id="modalTitle" class="text-2xl font-black text-white">Aggiungi server</h2>
+                    <p class="mt-1 text-sm text-slate-400">Inserisci solo API/token reali forniti dal tuo host.</p>
+                </div>
+                <button id="closeModalBtn" class="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-400">x</button>
+            </div>
+
+            <form id="serverForm" class="mt-6 space-y-5">
+                <input id="serverId" type="hidden">
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <label class="block">
+                        <span class="text-sm font-semibold text-slate-200">Nome</span>
+                        <input id="name" required placeholder="Survival amici" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    </label>
+                    <label class="block">
+                        <span class="text-sm font-semibold text-slate-200">IP o dominio Minecraft</span>
+                        <input id="address" placeholder="play.esempio.it:25565" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    </label>
+                </div>
+
+                <label class="block">
+                    <span class="text-sm font-semibold text-slate-200">MOTD del server <span class="text-xs font-normal text-slate-400">(opzionale)</span></span>
+                    <input id="motd" placeholder="Un server Minecraft spettacolare" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    <p class="mt-1 text-xs text-slate-400">Il browser non puo leggere direttamente il MOTD Minecraft via TCP. Se la tua API non lo fornisce, puoi scriverlo qui manualmente.</p>
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-semibold text-slate-200">Pagina originale del pannello</span>
+                    <input id="panelUrl" type="url" placeholder="https://panel.tuohost.it" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-semibold text-slate-200">Link diretto alla console <span class="text-xs font-normal text-slate-400">(opzionale)</span></span>
+                    <input id="consoleUrl" type="url" placeholder="https://panel.tuohost.it/server/abcd1234/console" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    <p class="mt-1 text-xs text-slate-400">Se la console live non funziona, questo link aprira la console del pannello in una nuova scheda.</p>
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-semibold text-slate-200">Link diretto all'ultimo log <span class="text-xs font-normal text-slate-400">(opzionale)</span></span>
+                    <input id="logUrl" type="url" placeholder="https://panel.tuohost.it/server/abcd1234/files/logs/latest.log" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    <p class="mt-1 text-xs text-slate-400">Se il log live non e disponibile, questo link aprira direttamente il file log del pannello.</p>
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-semibold text-slate-200">Link rinnovo server TickHosting <span class="text-xs font-normal text-slate-400">(opzionale)</span></span>
+                    <input id="renewUrl" type="url" placeholder="https://tickhosting.com/server/abcd1234" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    <p class="mt-1 text-xs text-slate-400">Se il server e TickHosting, questo link verra usato dal tasto Rinnova server.</p>
+                </label>
+
+                <label class="block">
+                    <span class="text-sm font-semibold text-slate-200">Tipo API</span>
+                    <select id="driver" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        <option value="pterodactyl">Pterodactyl / Pelican Client API</option>
+                        <option value="custom">API personalizzata dell'host</option>
+                    </select>
+                </label>
+
+                <div id="pteroFields" class="rounded-3xl bg-slate-950/50 p-4 ring-1 ring-slate-700">
+                    <h3 class="font-bold text-white">Pterodactyl / Pelican</h3>
+                    <p class="mt-1 text-sm text-slate-400">Usa il Client API token del pannello. L'endpoint usato sara <span class="font-mono text-emerald-200">/api/client/servers/{id}/power</span>.</p>
+                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">URL base pannello</span>
+                            <input id="pteroBaseUrl" type="url" placeholder="https://panel.tuohost.it" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Server identifier</span>
+                            <input id="pteroServerId" placeholder="abcd1234" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                    </div>
+                    <label class="mt-4 block">
+                        <span class="text-sm font-semibold text-slate-200">Client API token</span>
+                        <input id="pteroToken" type="password" autocomplete="off" placeholder="ptlc_..." class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    </label>
+                </div>
+
+                <div id="customFields" class="hidden rounded-3xl bg-slate-950/50 p-4 ring-1 ring-slate-700">
+                    <h3 class="font-bold text-white">API personalizzata</h3>
+                    <p class="mt-1 text-sm text-slate-400">Configura gli endpoint esatti forniti dal tuo hosting. Il token resta nel tuo browser.</p>
+                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                        <label class="block md:col-span-2">
+                            <span class="text-sm font-semibold text-slate-200">Start URL</span>
+                            <input id="customStartUrl" type="url" placeholder="https://api.host.it/server/123/start" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Metodo</span>
+                            <select id="customStartMethod" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                                <option>POST</option><option>GET</option><option>PUT</option><option>PATCH</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="mt-4 block">
+                        <span class="text-sm font-semibold text-slate-200">Start body JSON opzionale</span>
+                        <textarea id="customStartBody" rows="2" placeholder='{"signal":"start"}' class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 font-mono text-sm text-white outline-none transition focus:border-emerald-300"></textarea>
+                    </label>
+
+                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                        <label class="block md:col-span-2">
+                            <span class="text-sm font-semibold text-slate-200">Stop URL</span>
+                            <input id="customStopUrl" type="url" placeholder="https://api.host.it/server/123/stop" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Metodo</span>
+                            <select id="customStopMethod" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                                <option>POST</option><option>GET</option><option>PUT</option><option>PATCH</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="mt-4 block">
+                        <span class="text-sm font-semibold text-slate-200">Stop body JSON opzionale</span>
+                        <textarea id="customStopBody" rows="2" placeholder='{"signal":"stop"}' class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 font-mono text-sm text-white outline-none transition focus:border-emerald-300"></textarea>
+                    </label>
+
+                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                        <label class="block md:col-span-2">
+                            <span class="text-sm font-semibold text-slate-200">Status URL opzionale</span>
+                            <input id="customStatusUrl" type="url" placeholder="https://api.host.it/server/123/status" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Metodo</span>
+                            <select id="customStatusMethod" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                                <option>GET</option><option>POST</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="mt-4 block">
+                        <span class="text-sm font-semibold text-slate-200">Percorso stato nel JSON</span>
+                        <input id="customStatusPath" placeholder="data.status oppure attributes.current_state" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                    </label>
+
+                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Autenticazione</span>
+                            <select id="customAuthType" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                                <option value="bearer">Bearer token</option>
+                                <option value="header">Header personalizzato</option>
+                                <option value="none">Nessuna</option>
+                            </select>
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Nome header</span>
+                            <input id="customHeaderName" placeholder="Authorization" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                        <label class="block">
+                            <span class="text-sm font-semibold text-slate-200">Token o valore</span>
+                            <input id="customToken" type="password" autocomplete="off" placeholder="token API" class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-emerald-300">
+                        </label>
+                    </div>
+                    <label class="mt-4 block">
+                        <span class="text-sm font-semibold text-slate-200">Header extra JSON opzionali</span>
+                        <textarea id="customHeaders" rows="2" placeholder='{"X-Panel":"minecraft"}' class="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 font-mono text-sm text-white outline-none transition focus:border-emerald-300"></textarea>
+                    </label>
+                </div>
+
+                <div class="rounded-3xl bg-slate-950/50 p-4 text-sm text-slate-300 ring-1 ring-slate-700">
+                    <p class="font-semibold text-white">Sicurezza token</p>
+                    <p class="mt-1">I token vengono salvati in localStorage del browser. Non condividere il file esportato se contiene chiavi API. Usa token con permessi minimi: solo power/start/stop/status se il pannello lo permette.</p>
+                </div>
+
+                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button type="button" id="cancelBtn" class="rounded-full border border-slate-600 px-5 py-3 font-semibold text-slate-200 transition hover:border-slate-400">Annulla</button>
+                    <button type="button" id="discoverBtn" class="rounded-full border border-sky-300/60 px-5 py-3 font-semibold text-sky-100 transition hover:bg-sky-400/10">Trova ID server</button>
+                    <button type="button" id="testBtn" class="rounded-full border border-emerald-300/60 px-5 py-3 font-semibold text-emerald-100 transition hover:bg-emerald-400/10">Test CORS/API</button>
+                    <button type="submit" class="rounded-full bg-emerald-400 px-6 py-3 font-bold text-slate-950 transition hover:bg-emerald-300">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-4 left-1/2 z-[60] hidden w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 rounded-3xl border border-slate-700 bg-slate-950/95 p-4 text-sm text-slate-100 shadow-2xl"></div>
+
+    <div id="perfModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4">
+        <div class="surface max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-3xl p-5 sm:p-7">
+            <div class="flex items-start justify-between gap-4 mb-5">
+                <h2 id="perfTitle" class="text-2xl font-black text-white">Info sulle Prestazioni</h2>
+                <button onclick="document.getElementById('perfModal').classList.add('hidden');document.getElementById('perfModal').classList.remove('flex');clearInterval(window._perfInterval);" class="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-400">x</button>
+            </div>
+            <div id="perfContent" class="space-y-4 text-sm text-slate-300"></div>
+        </div>
+    </div>
+
+    <div id="consoleModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4">
+        <div class="surface w-full max-w-4xl rounded-3xl p-5 sm:p-7">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-purple-500/20 ring-1 ring-purple-400/40">
+                        <span class="text-lg text-purple-200">&gt;_</span>
+                    </div>
+                    <div>
+                        <h2 id="consoleTitle" class="text-xl font-black text-white sm:text-2xl">Show Live Console</h2>
+                        <p id="consoleStatus" class="text-xs text-amber-200"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a id="consoleDirectLink" href="#" target="_blank" rel="noreferrer" class="hidden rounded-full border border-purple-300/60 px-3 py-1.5 text-xs font-semibold text-purple-100 transition hover:bg-purple-400/10">Apri nel pannello &rarr;</a>
+                    <button onclick="closeConsole()" class="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-400">x</button>
+                </div>
+            </div>
+            <div id="consoleOutput" class="h-96 overflow-y-auto rounded-2xl bg-black p-4 font-mono text-xs leading-5 text-green-300 ring-1 ring-slate-700"></div>
+            <div class="mt-3 flex gap-2">
+                <input id="consoleCmd" type="text" placeholder="Scrivi un comando e premi Invio..." class="flex-1 rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 font-mono text-sm text-white outline-none transition focus:border-emerald-300" onkeydown="if(event.key==='Enter'){event.preventDefault();sendConsoleCmd();}">
+                <button onclick="sendConsoleCmd()" class="rounded-full bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300">Invia</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4">
+        <div class="surface w-full max-w-5xl rounded-3xl p-5 sm:p-7">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                    <h2 id="logTitle" class="text-xl font-black text-white sm:text-2xl">Vedi ultimo log</h2>
+                    <p id="logStatus" class="text-xs text-amber-200"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a id="logDirectLink" href="#" target="_blank" rel="noreferrer" class="hidden rounded-full border border-amber-300/60 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:bg-amber-400/10">Apri log diretto</a>
+                    <button onclick="closeLogModal()" class="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-400">x</button>
+                </div>
+            </div>
+            <pre id="logOutput" class="h-96 overflow-y-auto whitespace-pre-wrap rounded-2xl bg-black p-4 font-mono text-xs leading-5 text-amber-100 ring-1 ring-slate-700"></pre>
+        </div>
+    </div>
+
+    <script>
+        const storageKey = "mcApiControl.servers.v2";
+        const legacyStorageKeys = ["mcServers"];
+        const handleDbName = "mcApiControl.fileHandle.v1";
+        const handleStoreName = "handles";
+        const handleKey = "serverlist";
+        let externalFileHandle = null;
+        let servers = readServers();
+
+        const els = {
+            addServerBtn: document.getElementById("addServerBtn"),
+            linkServerListBtn: document.getElementById("linkServerListBtn"),
+            saveServerListBtn: document.getElementById("saveServerListBtn"),
+            exportBtn: document.getElementById("exportBtn"),
+            importInput: document.getElementById("importInput"),
+            clearBtn: document.getElementById("clearBtn"),
+            serverList: document.getElementById("serverList"),
+            emptyState: document.getElementById("emptyState"),
+            storageStatus: document.getElementById("storageStatus"),
+            externalFileStatus: document.getElementById("externalFileStatus"),
+            modal: document.getElementById("modal"),
+            modalTitle: document.getElementById("modalTitle"),
+            closeModalBtn: document.getElementById("closeModalBtn"),
+            cancelBtn: document.getElementById("cancelBtn"),
+            discoverBtn: document.getElementById("discoverBtn"),
+            testBtn: document.getElementById("testBtn"),
+            form: document.getElementById("serverForm"),
+            driver: document.getElementById("driver"),
+            pteroFields: document.getElementById("pteroFields"),
+            customFields: document.getElementById("customFields"),
+            toast: document.getElementById("toast")
+        };
+
+        const fieldIds = [
+            "serverId", "name", "address", "motd", "panelUrl", "consoleUrl", "logUrl", "renewUrl", "driver",
+            "pteroBaseUrl", "pteroServerId", "pteroToken",
+            "customStartUrl", "customStartMethod", "customStartBody",
+            "customStopUrl", "customStopMethod", "customStopBody",
+            "customStatusUrl", "customStatusMethod", "customStatusPath",
+            "customAuthType", "customHeaderName", "customToken", "customHeaders"
+        ];
+
+        els.addServerBtn.addEventListener("click", () => openModal());
+        els.linkServerListBtn.addEventListener("click", connectServerListFile);
+        els.saveServerListBtn.addEventListener("click", () => saveServerListToLinkedFile(true));
+        els.closeModalBtn.addEventListener("click", closeModal);
+        els.cancelBtn.addEventListener("click", closeModal);
+        els.driver.addEventListener("change", syncDriverFields);
+        els.form.addEventListener("submit", saveFromForm);
+        els.discoverBtn.addEventListener("click", discoverPterodactylServers);
+        els.testBtn.addEventListener("click", testFromForm);
+        els.exportBtn.addEventListener("click", () => exportServers());
+        els.importInput.addEventListener("change", importServers);
+        els.clearBtn.addEventListener("click", clearData);
+
+        renderServers();
+        syncDriverFields();
+        initExternalFile();
+
+        function storageWorks() {
+            try {
+                const testKey = storageKey + ".test";
+                localStorage.setItem(testKey, "1");
+                localStorage.removeItem(testKey);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function readServers() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(storageKey));
+                if (Array.isArray(parsed)) return parsed;
+
+                for (const key of legacyStorageKeys) {
+                    const legacy = JSON.parse(localStorage.getItem(key));
+                    if (Array.isArray(legacy) && legacy.length) {
+                        const migrated = legacy.map(migrateLegacyServer);
+                        localStorage.setItem(storageKey, JSON.stringify(migrated));
+                        return migrated;
+                    }
+                }
+
+                return [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function migrateLegacyServer(server) {
+            const driver = server.type === "custom" ? "custom" : "pterodactyl";
+            return {
+                id: String(server.id || generateId()),
+                name: server.name || "Server Minecraft",
+                address: server.address || "",
+                motd: "",
+                panelUrl: server.url || "",
+                consoleUrl: "",
+                logUrl: "",
+                renewUrl: "",
+                driver,
+                pteroBaseUrl: "",
+                pteroServerId: "",
+                pteroToken: "",
+                customStartUrl: server.customStartUrl || "",
+                customStartMethod: "POST",
+                customStartBody: "",
+                customStopUrl: server.customStopUrl || "",
+                customStopMethod: "POST",
+                customStopBody: "",
+                customStatusUrl: "",
+                customStatusMethod: "GET",
+                customStatusPath: "",
+                customAuthType: server.customApiKey ? "bearer" : "none",
+                customHeaderName: "Authorization",
+                customToken: server.customApiKey || "",
+                customHeaders: "",
+                lastResult: "Importato dalla vecchia versione",
+                lastStatus: server.status || "unknown"
+            };
+        }
+
+        function persist(writeExternal = true) {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(servers));
+                updateStorageStatus();
+                if (writeExternal && externalFileHandle) {
+                    saveServerListToLinkedFile(false).catch(() => {
+                        updateExternalFileStatus("Non ho potuto aggiornare serverlist automaticamente. Premi Salva serverlist per ridare il permesso di scrittura.");
+                    });
+                }
+            } catch (error) {
+                showToast("Il browser non permette il salvataggio locale. Usa Esporta per non perdere i server.", "error");
+                updateStorageStatus(false);
+            }
+        }
+
+        function updateStorageStatus(forceOk = null) {
+            const ok = forceOk === null ? storageWorks() : forceOk;
+            if (ok) {
+                els.storageStatus.className = "mt-5 rounded-2xl bg-emerald-500/10 p-4 text-sm text-emerald-100 ring-1 ring-emerald-400/20";
+                els.storageStatus.textContent = `Salvataggio automatico attivo: ${servers.length} server salvati in questo browser. Quando chiudi e riapri lo stesso file, vengono ricaricati automaticamente.`;
+            } else {
+                els.storageStatus.className = "mt-5 rounded-2xl bg-red-500/10 p-4 text-sm text-red-100 ring-1 ring-red-400/20";
+                els.storageStatus.textContent = "Salvataggio locale non disponibile in questo browser o modalita privata. I server restano finche la pagina e aperta: usa Esporta per fare un backup.";
+            }
+        }
+
+        function supportsExternalFileAccess() {
+            return "showOpenFilePicker" in window && "showSaveFilePicker" in window && "indexedDB" in window;
+        }
+
+        function updateExternalFileStatus(message = "") {
+            if (!supportsExternalFileAccess()) {
+                els.externalFileStatus.className = "mt-3 rounded-2xl bg-amber-500/10 p-4 text-sm text-amber-100 ring-1 ring-amber-400/20";
+                els.externalFileStatus.textContent = "File esterno serverlist: questo browser non permette lettura/scrittura diretta di file locali. Collega serverlist carica un file esistente, Salva serverlist scarica una copia aggiornata.";
+                return;
+            }
+
+            if (message) {
+                els.externalFileStatus.className = "mt-3 rounded-2xl bg-sky-500/10 p-4 text-sm text-sky-100 ring-1 ring-sky-400/20";
+                els.externalFileStatus.textContent = message;
+                return;
+            }
+
+            if (externalFileHandle) {
+                els.externalFileStatus.className = "mt-3 rounded-2xl bg-emerald-500/10 p-4 text-sm text-emerald-100 ring-1 ring-emerald-400/20";
+                els.externalFileStatus.textContent = "File serverlist collegato. Le modifiche vengono salvate anche nel file esterno quando il browser ha il permesso di scrittura.";
+            } else {
+                els.externalFileStatus.className = "mt-3 rounded-2xl bg-slate-950/45 p-4 text-sm text-slate-300 ring-1 ring-slate-700";
+                els.externalFileStatus.textContent = "File esterno serverlist non ancora collegato. Premi Collega serverlist per scegliere un file esistente o crearne uno nuovo chiamato serverlist.";
+            }
+        }
+
+        async function initExternalFile() {
+            updateExternalFileStatus();
+            if (!supportsExternalFileAccess()) return;
+
+            try {
+                externalFileHandle = await idbGet(handleKey);
+                if (!externalFileHandle) {
+                    updateExternalFileStatus();
+                    return;
+                }
+
+                const permission = await externalFileHandle.queryPermission({ mode: "readwrite" });
+                if (permission === "granted") {
+                    await loadServerListFromHandle(false);
+                    updateExternalFileStatus("File serverlist trovato e caricato automaticamente.");
+                } else {
+                    updateExternalFileStatus("File serverlist ricordato, ma il browser richiede una conferma. Premi Collega serverlist per autorizzarlo di nuovo.");
+                }
+            } catch (error) {
+                updateExternalFileStatus("Non riesco a recuperare il collegamento al file serverlist. Premi Collega serverlist per selezionarlo di nuovo.");
+            }
+        }
+
+        async function connectServerListFile() {
+            if (!supportsExternalFileAccess()) {
+                showToast("Questo browser non consente il collegamento diretto ai file. Seleziona il file serverlist da caricare.", "info");
+                els.importInput.click();
+                return;
+            }
+
+            try {
+                const useExisting = confirm("Premi OK per selezionare un file serverlist esistente. Premi Annulla per creare un nuovo file chiamato serverlist.");
+                if (useExisting) {
+                    const handles = await window.showOpenFilePicker({
+                        multiple: false,
+                        excludeAcceptAllOption: false
+                    });
+                    externalFileHandle = handles[0];
+                    await idbSet(handleKey, externalFileHandle);
+                    if (!(await verifyPermission(externalFileHandle, true))) throw new Error("Permesso negato per leggere o scrivere serverlist.");
+                    await loadServerListFromHandle(true);
+                } else {
+                    externalFileHandle = await window.showSaveFilePicker({
+                        suggestedName: "serverlist"
+                    });
+                    await idbSet(handleKey, externalFileHandle);
+                    if (!(await verifyPermission(externalFileHandle, true))) throw new Error("Permesso negato per creare serverlist.");
+                    await saveServerListToLinkedFile(true);
+                }
+
+                updateExternalFileStatus();
+            } catch (error) {
+                if (error && error.name === "AbortError") return;
+                showToast(formatError(error), "error");
+                updateExternalFileStatus();
+            }
+        }
+
+        async function loadServerListFromHandle(showMessage) {
+            if (!externalFileHandle) throw new Error("Nessun file serverlist collegato.");
+            if (!(await verifyPermission(externalFileHandle, false))) throw new Error("Permesso di lettura negato per serverlist.");
+
+            const file = await externalFileHandle.getFile();
+            const text = (await file.text()).trim();
+            if (!text) {
+                await saveServerListToLinkedFile(false);
+                if (showMessage) showToast("File serverlist vuoto: l'ho compilato con i server attuali.", "success");
+                return;
+            }
+
+            const parsed = JSON.parse(text);
+            const imported = Array.isArray(parsed) ? parsed : parsed.servers;
+            if (!Array.isArray(imported)) throw new Error("Il file serverlist non contiene una lista server valida.");
+            servers = normalizeImportedServers(imported);
+            persist(false);
+            renderServers();
+            if (showMessage) showToast("Server caricati dal file serverlist.", "success");
+        }
+
+        async function saveServerListToLinkedFile(showMessage) {
+            if (!supportsExternalFileAccess()) {
+                if (showMessage) exportServers("serverlist");
+                return;
+            }
+
+            if (!externalFileHandle) {
+                if (showMessage) await connectServerListFile();
+                return;
+            }
+
+            if (!(await verifyPermission(externalFileHandle, true))) {
+                if (showMessage) showToast("Permesso di scrittura negato per serverlist.", "error");
+                return;
+            }
+
+            const writable = await externalFileHandle.createWritable();
+            await writable.write(JSON.stringify({ updatedAt: new Date().toISOString(), servers }, null, 2));
+            await writable.close();
+            updateExternalFileStatus();
+            if (showMessage) showToast("File serverlist salvato.", "success");
+        }
+
+        function normalizeImportedServers(imported) {
+            return imported.filter(item => item && typeof item === "object").map(item => ({
+                ...item,
+                id: String(item.id || generateId()),
+                name: item.name || "Server Minecraft",
+                driver: item.driver || "custom",
+                lastStatus: item.lastStatus || "unknown",
+                lastResult: item.lastResult || "Importato da serverlist"
+            }));
+        }
+
+        async function verifyPermission(handle, write) {
+            const options = { mode: write ? "readwrite" : "read" };
+            if ((await handle.queryPermission(options)) === "granted") return true;
+            if ((await handle.requestPermission(options)) === "granted") return true;
+            return false;
+        }
+
+        function openHandleDb() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(handleDbName, 1);
+                request.onupgradeneeded = () => request.result.createObjectStore(handleStoreName);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function idbGet(key) {
+            const db = await openHandleDb();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(handleStoreName, "readonly");
+                const request = tx.objectStore(handleStoreName).get(key);
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => reject(request.error);
+                tx.oncomplete = () => db.close();
+            });
+        }
+
+        async function idbSet(key, valueToStore) {
+            const db = await openHandleDb();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(handleStoreName, "readwrite");
+                tx.objectStore(handleStoreName).put(valueToStore, key);
+                tx.oncomplete = () => { db.close(); resolve(); };
+                tx.onerror = () => { db.close(); reject(tx.error); };
+            });
+        }
+
+        function value(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function setValue(id, val) {
+            document.getElementById(id).value = val || "";
+        }
+
+        function normalizeUrl(url) {
+            return (url || "").replace(/\/+$/, "");
+        }
+
+        function generateId() {
+            if (window.crypto && typeof window.crypto.randomUUID === "function") {
+                return window.crypto.randomUUID();
+            }
+            return "srv-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+        }
+
+        function escapeHtml(text) {
+            const map = {};
+            map[String.fromCharCode(38)] = String.fromCharCode(38, 35, 51, 56, 59);
+            map[String.fromCharCode(60)] = String.fromCharCode(38, 35, 54, 48, 59);
+            map[String.fromCharCode(62)] = String.fromCharCode(38, 35, 54, 50, 59);
+            map[String.fromCharCode(34)] = String.fromCharCode(38, 113, 117, 111, 116, 59);
+            map[String.fromCharCode(39)] = String.fromCharCode(38, 35, 48, 51, 57, 59);
+            return String(text || "").replace(/[&<>"']/g, char => map[char]);
+        }
+
+        function escapeJsString(text) {
+            return String(text || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\r?\n/g, " ");
+        }
+
+        function panelLink(url) {
+            if (!url) return "non inserito";
+            try {
+                const parsed = new URL(url);
+                if (!["http:", "https:"].includes(parsed.protocol)) return "non inserito";
+                return `<a class="text-emerald-200 underline decoration-emerald-200/30" target="_blank" rel="noreferrer" href="${escapeHtml(parsed.href)}">apri pagina originale</a>`;
+            } catch (error) {
+                return "non inserito";
+            }
+        }
+
+        function isTickHostingServer(server) {
+            const haystack = [server.panelUrl, server.pteroBaseUrl, server.address, server.renewUrl]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+            return haystack.includes("tickhosting") || haystack.includes("tichosting") || haystack.includes("tichkosting");
+        }
+
+        function showToast(message, type = "info") {
+            const color = type === "error" ? "border-red-400/40 text-red-50" : type === "success" ? "border-emerald-400/40 text-emerald-50" : "border-slate-700 text-slate-100";
+            els.toast.className = `fixed bottom-4 left-1/2 z-[60] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 rounded-3xl border bg-slate-950/95 p-4 text-sm shadow-2xl ${color}`;
+            els.toast.textContent = message;
+            els.toast.classList.remove("hidden");
+            window.clearTimeout(showToast.timer);
+            showToast.timer = window.setTimeout(() => els.toast.classList.add("hidden"), 6500);
+        }
+
+        function openModal(server = null) {
+            els.form.reset();
+            setValue("customStartMethod", "POST");
+            setValue("customStopMethod", "POST");
+            setValue("customStatusMethod", "GET");
+            setValue("customAuthType", "bearer");
+            setValue("driver", "pterodactyl");
+            els.modalTitle.textContent = server ? "Modifica server" : "Aggiungi server";
+
+            if (server) {
+                setValue("serverId", server.id);
+                setValue("name", server.name);
+                setValue("address", server.address);
+                setValue("motd", server.motd);
+                setValue("panelUrl", server.panelUrl);
+                setValue("consoleUrl", server.consoleUrl);
+                setValue("logUrl", server.logUrl);
+                setValue("renewUrl", server.renewUrl);
+                setValue("driver", server.driver);
+                setValue("pteroBaseUrl", server.pteroBaseUrl);
+                setValue("pteroServerId", server.pteroServerId);
+                setValue("pteroToken", server.pteroToken);
+                setValue("customStartUrl", server.customStartUrl);
+                setValue("customStartMethod", server.customStartMethod || "POST");
+                setValue("customStartBody", server.customStartBody);
+                setValue("customStopUrl", server.customStopUrl);
+                setValue("customStopMethod", server.customStopMethod || "POST");
+                setValue("customStopBody", server.customStopBody);
+                setValue("customStatusUrl", server.customStatusUrl);
+                setValue("customStatusMethod", server.customStatusMethod || "GET");
+                setValue("customStatusPath", server.customStatusPath);
+                setValue("customAuthType", server.customAuthType || "bearer");
+                setValue("customHeaderName", server.customHeaderName);
+                setValue("customToken", server.customToken);
+                setValue("customHeaders", server.customHeaders);
+            }
+
+            syncDriverFields();
+            els.modal.classList.remove("hidden");
+            els.modal.classList.add("flex");
+        }
+
+        function closeModal() {
+            els.modal.classList.add("hidden");
+            els.modal.classList.remove("flex");
+        }
+
+        function syncDriverFields() {
+            const driver = value("driver") || "pterodactyl";
+            els.pteroFields.classList.toggle("hidden", driver !== "pterodactyl");
+            els.customFields.classList.toggle("hidden", driver !== "custom");
+        }
+
+        function collectForm() {
+            const server = {};
+            fieldIds.forEach(id => server[id] = value(id));
+            server.id = server.serverId || generateId();
+            server.name = server.name || "Server Minecraft";
+            server.panelUrl = normalizeUrl(server.panelUrl);
+            server.consoleUrl = normalizeUrl(server.consoleUrl);
+            server.logUrl = normalizeUrl(server.logUrl);
+            server.renewUrl = normalizeUrl(server.renewUrl);
+            server.pteroBaseUrl = normalizeUrl(server.pteroBaseUrl);
+            server.lastResult = "Non ancora testato";
+            server.lastStatus = "unknown";
+            delete server.serverId;
+            return server;
+        }
+
+        function saveFromForm(event) {
+            event.preventDefault();
+            const server = collectForm();
+            const existing = servers.findIndex(item => item.id === server.id);
+            if (existing >= 0) {
+                server.lastResult = servers[existing].lastResult || server.lastResult;
+                server.lastStatus = servers[existing].lastStatus || server.lastStatus;
+                servers[existing] = server;
+            } else {
+                servers.push(server);
+            }
+            persist();
+            renderServers();
+            closeModal();
+            showToast("Server salvato nel browser.", "success");
+        }
+
+        async function testFromForm() {
+            const server = collectForm();
+            try {
+                const result = await getStatus(server);
+                showToast("Test riuscito: " + result.message, "success");
+            } catch (error) {
+                showToast(formatError(error), "error");
+            }
+        }
+
+        async function discoverPterodactylServers() {
+            const baseUrl = normalizeUrl(value("pteroBaseUrl"));
+            const token = value("pteroToken");
+            if (!baseUrl || !token) {
+                showToast("Inserisci prima URL base pannello e Client API token.", "error");
+                return;
+            }
+
+            try {
+                const response = await safeFetch(`${baseUrl}/api/client`, {
+                    method: "GET",
+                    headers: pteroHeaders(token, false)
+                }, "Pterodactyl lista server");
+                const data = await consumeResponse(response);
+                const serversList = Array.isArray(data?.data) ? data.data : [];
+                if (!serversList.length) {
+                    showToast("API raggiunta, ma non risultano server accessibili con questo token.", "error");
+                    return;
+                }
+
+                const lines = serversList.map((item, index) => {
+                    const attr = item.attributes || {};
+                    return `${index + 1}) ${attr.name || "Server"} - ID: ${attr.identifier || "mancante"}`;
+                });
+                const choice = prompt("Server trovati:\n\n" + lines.join("\n") + "\n\nScrivi il numero del server da usare:", "1");
+                const selected = serversList[Number(choice) - 1];
+                if (!selected) return;
+
+                const attr = selected.attributes || {};
+                setValue("pteroServerId", attr.identifier || "");
+                if (!value("name") && attr.name) setValue("name", attr.name);
+                showToast("Server identifier inserito automaticamente: " + (attr.identifier || "mancante"), "success");
+            } catch (error) {
+                showToast(formatError(error), "error");
+            }
+        }
+
+        function renderServers() {
+            els.emptyState.classList.toggle("hidden", servers.length > 0);
+            els.serverList.innerHTML = servers.map(serverTemplate).join("");
+            updateStorageStatus();
+        }
+
+        function serverTemplate(server) {
+            const status = statusLabel(server.lastStatus);
+            const id = escapeJsString(server.id);
+            const showRenew = isTickHostingServer(server) || Boolean(server.renewUrl);
+            const motdText = server.motd || server.lastMotd || "MOTD non disponibile";
+            const driverLabel = server.driver === "pterodactyl" ? "Pterodactyl / Pelican" : "API personalizzata";
+            const driverIcon = server.driver === "pterodactyl" ? "P" : "C";
+            const dotColor = ["running","online"].includes(String(server.lastStatus).toLowerCase()) ? "bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]"
+                : ["starting","stopping"].includes(String(server.lastStatus).toLowerCase()) ? "bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.7)]"
+                : ["hibernated","hibernate","ibernato","ibernata"].includes(String(server.lastStatus).toLowerCase()) ? "bg-indigo-400 shadow-[0_0_12px_rgba(129,140,248,0.7)]"
+                : ["offline"].includes(String(server.lastStatus).toLowerCase()) ? "bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.7)]"
+                : "bg-slate-500";
+            const accentBar = ["running","online"].includes(String(server.lastStatus).toLowerCase()) ? "from-emerald-400 to-teal-300"
+                : ["starting","stopping"].includes(String(server.lastStatus).toLowerCase()) ? "from-amber-400 to-orange-300"
+                : ["hibernated","hibernate","ibernato","ibernata"].includes(String(server.lastStatus).toLowerCase()) ? "from-indigo-400 to-violet-300"
+                : ["offline"].includes(String(server.lastStatus).toLowerCase()) ? "from-red-400 to-rose-300"
+                : "from-slate-600 to-slate-500";
+
+            return `
+                <article class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900/80 via-slate-950/90 to-slate-900/80 ring-1 ring-slate-700/80 transition-all duration-300 hover:-translate-y-1 hover:ring-emerald-300/50 hover:shadow-2xl hover:shadow-emerald-500/10">
+                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accentBar}"></div>
+                    <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-emerald-500/5 blur-3xl transition-all duration-500 group-hover:bg-emerald-400/10"></div>
+
+                    <div class="relative p-5 sm:p-6">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/20 to-sky-400/10 ring-1 ring-emerald-300/20">
+                                    <span class="text-lg font-black text-emerald-200">${driverIcon}</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black tracking-tight text-white sm:text-xl">${escapeHtml(server.name)}</h3>
+                                    <p class="mt-0.5 font-mono text-xs text-slate-400">${escapeHtml(server.address || "IP non inserito")}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 rounded-full bg-slate-950/70 px-3 py-1.5 ring-1 ring-slate-700">
+                                <span class="h-2 w-2 rounded-full ${dotColor} animate-pulse"></span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-200">${status.text}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 grid grid-cols-2 gap-2 text-xs">
+                            <div class="rounded-2xl bg-slate-950/60 px-3 py-2 ring-1 ring-slate-800">
+                                <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Tipo</p>
+                                <p class="mt-0.5 truncate font-semibold text-slate-200">${driverLabel}</p>
+                            </div>
+                            <div class="rounded-2xl bg-slate-950/60 px-3 py-2 ring-1 ring-slate-800">
+                                <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Pannello</p>
+                                <p class="mt-0.5 truncate font-semibold">${panelLink(server.panelUrl)}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 rounded-2xl bg-emerald-500/10 px-3 py-2 text-xs ring-1 ring-emerald-400/20">
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-emerald-200/80">MOTD</p>
+                            <p class="mt-0.5 line-clamp-2 font-semibold text-emerald-50">${escapeHtml(motdText)}</p>
+                        </div>
+
+                        <div class="mt-2 grid gap-2 ${server.consoleUrl && server.logUrl ? 'sm:grid-cols-2' : ''}">
+                            ${server.consoleUrl ? `
+                                <a href="${escapeHtml(server.consoleUrl)}" target="_blank" rel="noreferrer" class="flex items-center justify-between rounded-2xl bg-purple-500/10 px-3 py-2 text-xs ring-1 ring-purple-400/30 transition hover:bg-purple-500/20">
+                                    <span class="font-semibold text-purple-100">Console diretta nel pannello</span>
+                                    <span class="text-purple-200">apri</span>
+                                </a>
+                            ` : ''}
+                            ${server.logUrl ? `
+                                <a href="${escapeHtml(server.logUrl)}" target="_blank" rel="noreferrer" class="flex items-center justify-between rounded-2xl bg-amber-500/10 px-3 py-2 text-xs ring-1 ring-amber-400/30 transition hover:bg-amber-500/20">
+                                    <span class="font-semibold text-amber-100">Ultimo log diretto</span>
+                                    <span class="text-amber-200">apri</span>
+                                </a>
+                            ` : ''}
+                        </div>
+
+                        <div class="mt-3 rounded-2xl bg-slate-950/60 px-3 py-2 text-xs ring-1 ring-slate-800">
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Ultimo risultato</p>
+                            <p class="mt-0.5 line-clamp-2 text-slate-300">${escapeHtml(server.lastResult || "Nessuna azione effettuata")}</p>
+                        </div>
+
+                        <div class="mt-5">
+                            <p class="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Alimentazione</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button class="group/btn flex items-center justify-center gap-1 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-500 px-3 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:from-emerald-300 hover:to-emerald-400 hover:shadow-emerald-400/30 active:scale-95" onclick="startServer('${id}')">
+                                    <span>&#9654;</span><span>Avvia</span>
+                                </button>
+                                <button class="group/btn flex items-center justify-center gap-1 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 px-3 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:from-amber-300 hover:to-amber-400 hover:shadow-amber-400/30 active:scale-95" onclick="restartServer('${id}')">
+                                    <span>&#8635;</span><span>Riavvia</span>
+                                </button>
+                                <button class="group/btn flex items-center justify-center gap-1 rounded-2xl bg-gradient-to-br from-red-400 to-red-500 px-3 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-red-500/20 transition hover:from-red-300 hover:to-red-400 hover:shadow-red-400/30 active:scale-95" onclick="stopServer('${id}')">
+                                    <span>&#9632;</span><span>Spegni</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <p class="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Strumenti</p>
+                            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                <button class="flex items-center justify-center gap-1 rounded-2xl border border-slate-700 bg-slate-900/60 px-2 py-2 text-xs font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800/60 active:scale-95" onclick="statusServer('${id}')">Aggiorna stato del server</button>
+                                <button class="flex items-center justify-center gap-1 rounded-2xl border border-sky-400/40 bg-sky-500/5 px-2 py-2 text-xs font-semibold text-sky-100 transition hover:border-sky-300/70 hover:bg-sky-500/15 active:scale-95" onclick="showPerformance('${id}')">Info sulle Prestazioni</button>
+                                <button class="flex items-center justify-center gap-1 rounded-2xl border border-purple-400/40 bg-purple-500/5 px-2 py-2 text-xs font-semibold text-purple-100 transition hover:border-purple-300/70 hover:bg-purple-500/15 active:scale-95" onclick="showConsole('${id}')">Vedi la Console in tempo reale</button>
+                                <button class="flex items-center justify-center gap-1 rounded-2xl border border-amber-400/40 bg-amber-500/5 px-2 py-2 text-xs font-semibold text-amber-100 transition hover:border-amber-300/70 hover:bg-amber-500/15 active:scale-95" onclick="showLogs('${id}')">Vedi ultimo log</button>
+                            </div>
+                            ${showRenew ? `
+                                <button class="mt-2 w-full rounded-2xl border border-indigo-400/50 bg-indigo-500/10 px-3 py-2 text-xs font-bold text-indigo-100 transition hover:border-indigo-300/80 hover:bg-indigo-500/20 active:scale-95" onclick="renewServer('${id}')">Rinnova server</button>
+                            ` : ''}
+                        </div>
+
+                        <div class="mt-3 flex gap-2">
+                            <button class="flex-1 rounded-2xl border border-slate-700 bg-slate-900/40 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-slate-500 hover:bg-slate-800/60" onclick="editServer('${id}')">Modifica</button>
+                            <button class="flex-1 rounded-2xl border border-red-400/30 bg-red-500/5 px-3 py-2 text-xs font-semibold text-red-200 transition hover:border-red-400/60 hover:bg-red-500/15" onclick="deleteServer('${id}')">Elimina</button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function statusLabel(status) {
+            const map = {
+                running: { text: "Online", className: "bg-emerald-400/15 text-emerald-200" },
+                online: { text: "Online", className: "bg-emerald-400/15 text-emerald-200" },
+                starting: { text: "Avvio", className: "bg-amber-400/15 text-amber-200" },
+                stopping: { text: "Stop", className: "bg-amber-400/15 text-amber-200" },
+                hibernated: { text: "Ibernato", className: "bg-indigo-400/15 text-indigo-200" },
+                hibernate: { text: "Ibernato", className: "bg-indigo-400/15 text-indigo-200" },
+                ibernato: { text: "Ibernato", className: "bg-indigo-400/15 text-indigo-200" },
+                ibernata: { text: "Ibernato", className: "bg-indigo-400/15 text-indigo-200" },
+                offline: { text: "Offline", className: "bg-red-400/15 text-red-200" },
+                unknown: { text: "Sconosciuto", className: "bg-slate-500/15 text-slate-200" }
+            };
+            return map[String(status || "unknown").toLowerCase()] || { text: String(status).slice(0, 18), className: "bg-blue-400/15 text-blue-200" };
+        }
+
+        function findServer(id) {
+            return servers.find(server => server.id === id);
+        }
+
+        async function startServer(id) {
+            await runAction(id, "start");
+        }
+
+        async function stopServer(id) {
+            await runAction(id, "stop");
+        }
+
+        async function statusServer(id) {
+            const server = findServer(id);
+            if (!server) return;
+            try {
+                const result = await getStatus(server);
+                server.lastStatus = result.status || "unknown";
+                if (result.motd) server.lastMotd = result.motd;
+                server.lastResult = result.message;
+                persist();
+                renderServers();
+                showToast(result.message, "success");
+            } catch (error) {
+                server.lastResult = formatError(error);
+                persist();
+                renderServers();
+                showToast(server.lastResult, "error");
+            }
+        }
+
+        async function runAction(id, action) {
+            const server = findServer(id);
+            if (!server) return;
+            try {
+                const result = await sendPower(server, action);
+                server.lastStatus = action === "start" ? "starting" : "stopping";
+                server.lastResult = result.message;
+                persist();
+                renderServers();
+                showToast(result.message, "success");
+            } catch (error) {
+                server.lastResult = formatError(error);
+                persist();
+                renderServers();
+                showToast(server.lastResult, "error");
+            }
+        }
+
+        async function sendPower(server, action) {
+            if (server.driver === "pterodactyl") {
+                requireFields(server, ["pteroBaseUrl", "pteroServerId", "pteroToken"]);
+                const url = `${server.pteroBaseUrl}/api/client/servers/${encodeURIComponent(server.pteroServerId)}/power`;
+                const response = await safeFetch(url, {
+                    method: "POST",
+                    headers: pteroHeaders(server.pteroToken, true),
+                    body: JSON.stringify({ signal: action })
+                }, `Pterodactyl ${action}`);
+                await consumeResponse(response);
+                return { message: `Comando ${action} inviato a ${server.name}.` };
+            }
+
+            const prefix = action === "start" ? "customStart" : "customStop";
+            const url = server[`${prefix}Url`];
+            const method = server[`${prefix}Method`] || "POST";
+            const body = server[`${prefix}Body`];
+            if (!url) throw new Error(`Endpoint ${action} mancante.`);
+            const response = await safeFetch(url, buildCustomRequest(server, method, body), `Custom ${action}`);
+            await consumeResponse(response);
+            return { message: `Comando ${action} inviato a ${server.name}.` };
+        }
+
+        async function getStatus(server) {
+            if (server.driver === "pterodactyl") {
+                requireFields(server, ["pteroBaseUrl", "pteroServerId", "pteroToken"]);
+                const url = `${server.pteroBaseUrl}/api/client/servers/${encodeURIComponent(server.pteroServerId)}/resources`;
+                const response = await safeFetch(url, {
+                    method: "GET",
+                    headers: pteroHeaders(server.pteroToken, false)
+                }, "Pterodactyl status");
+                const data = await consumeResponse(response);
+                const status = data?.attributes?.current_state || data?.current_state || "unknown";
+                const motd = data?.attributes?.description || data?.description || "";
+                return { status, motd, message: `Stato ${server.name}: ${status}.` };
+            }
+
+            if (!server.customStatusUrl) throw new Error("Endpoint status mancante.");
+            const response = await safeFetch(server.customStatusUrl, buildCustomRequest(server, server.customStatusMethod || "GET", ""), "Custom status");
+            const data = await consumeResponse(response);
+            const status = server.customStatusPath ? getByPath(data, server.customStatusPath) : data?.status;
+            const motd = data?.motd || data?.description || data?.server?.motd || "";
+            return { status: status || "unknown", motd, message: `Risposta status ricevuta: ${status || JSON.stringify(data).slice(0, 120)}.` };
+        }
+
+        function requireFields(server, fields) {
+            const missing = fields.filter(field => !server[field]);
+            if (missing.length) throw new Error("Configurazione incompleta: " + missing.join(", "));
+        }
+
+        function pteroHeaders(token, hasBody) {
+            const headers = {
+                "Accept": "Application/vnd.pterodactyl.v1+json",
+                "Authorization": `Bearer ${token}`
+            };
+            if (hasBody) headers["Content-Type"] = "application/json";
+            return headers;
+        }
+
+        function buildCustomRequest(server, method, rawBody) {
+            const headers = { "Accept": "application/json" };
+            if (server.customAuthType === "bearer" && server.customToken) {
+                headers.Authorization = `Bearer ${server.customToken}`;
+            }
+            if (server.customAuthType === "header" && server.customHeaderName && server.customToken) {
+                headers[server.customHeaderName] = server.customToken;
+            }
+            if (server.customHeaders) {
+                Object.assign(headers, parseJsonObject(server.customHeaders, "Header extra JSON non validi."));
+            }
+            const options = { method, headers };
+            if (method !== "GET" && rawBody) {
+                headers["Content-Type"] = headers["Content-Type"] || "application/json";
+                options.body = rawBody;
+            }
+            return options;
+        }
+
+        function parseJsonObject(text, message) {
+            try {
+                const parsed = JSON.parse(text);
+                if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error();
+                return parsed;
+            } catch (error) {
+                throw new Error(message);
+            }
+        }
+
+        async function safeFetch(url, options, label = "API") {
+            let parsed;
+            try {
+                parsed = new URL(url);
+            } catch (error) {
+                throw new Error(`URL API non valido per ${label}: ${url || "vuoto"}. Inserisci un URL completo che inizi con https:// oppure http://.`);
+            }
+
+            if (!["https:", "http:"].includes(parsed.protocol)) {
+                throw new Error(`Protocollo non valido per ${label}. Usa solo https:// oppure http://.`);
+            }
+
+            try {
+                return await fetch(url, { ...options, mode: "cors", credentials: "omit" });
+            } catch (error) {
+                throw new Error(`Connessione browser bloccata per ${label}. Non e un problema della tua connessione internet se il pannello si apre normalmente. URL chiamato: ${parsed.href}. Cause probabili: CORS non abilitato per origine file://, header Authorization non permesso, metodo ${options.method || "GET"} non permesso, oppure preflight OPTIONS bloccata. L'host deve permettere Access-Control-Allow-Origin: null, Access-Control-Allow-Headers: Authorization, Content-Type, Accept e Access-Control-Allow-Methods: GET, POST, PUT, PATCH, OPTIONS.`);
+            }
+        }
+
+        async function consumeResponse(response) {
+            const text = await response.text();
+            let data = null;
+            if (text) {
+                try { data = JSON.parse(text); } catch (error) { data = { text }; }
+            }
+            if (!response.ok) {
+                const detail = data?.errors?.[0]?.detail || data?.message || data?.text || response.statusText;
+                throw new Error(`API HTTP ${response.status}: ${detail}`);
+            }
+            return data || {};
+        }
+
+        function getByPath(obj, path) {
+            return path.split(".").reduce((acc, key) => acc == null ? undefined : acc[key], obj);
+        }
+
+        function formatError(error) {
+            return error?.message || "Errore sconosciuto.";
+        }
+
+        function editServer(id) {
+            const server = findServer(id);
+            if (server) openModal(server);
+        }
+
+        function deleteServer(id) {
+            if (!confirm("Eliminare questo server dal browser?")) return;
+            servers = servers.filter(server => server.id !== id);
+            persist();
+            renderServers();
+            showToast("Server eliminato.", "success");
+        }
+
+        function exportServers(fileName = "mc-api-control-servers.json") {
+            const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), servers }, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("File esportato. Attenzione: puo contenere token API.", "info");
+        }
+
+        async function importServers(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                const imported = Array.isArray(parsed) ? parsed : parsed.servers;
+                if (!Array.isArray(imported)) throw new Error("Formato file non valido.");
+                servers = normalizeImportedServers(imported);
+                persist();
+                renderServers();
+                showToast("Import completato.", "success");
+            } catch (error) {
+                showToast(formatError(error), "error");
+            } finally {
+                event.target.value = "";
+            }
+        }
+
+        function clearData() {
+            if (!confirm("Cancellare tutti i server e token salvati in questo browser?")) return;
+            servers = [];
+            persist();
+            renderServers();
+            showToast("Dati locali cancellati.", "success");
+        }
+
+        async function restartServer(id) {
+            await runAction(id, "restart");
+        }
+
+        function renewServer(id) {
+            const server = findServer(id);
+            if (!server) return;
+            const url = server.renewUrl || server.panelUrl || "https://tickhosting.com/";
+            window.open(url, "_blank", "noopener,noreferrer");
+            server.lastResult = server.renewUrl
+                ? "Aperto link rinnovo server."
+                : "Aperto pannello TickHosting: completa il rinnovo dalla pagina dell'host.";
+            persist();
+            renderServers();
+            showToast(server.lastResult, "info");
+        }
+
+        async function showPerformance(id) {
+            const server = findServer(id);
+            if (!server) return;
+
+            const perfModal = document.getElementById("perfModal");
+            const perfTitle = document.getElementById("perfTitle");
+            const perfContent = document.getElementById("perfContent");
+
+            perfTitle.textContent = "Prestazioni: " + server.name;
+            perfContent.innerHTML = '<p class="text-slate-400">Caricamento in corso...</p>';
+            perfModal.classList.remove("hidden");
+            perfModal.classList.add("flex");
+
+            async function refreshPerf() {
+                try {
+                    const result = await getResources(server);
+                    perfContent.innerHTML = result.html;
+                } catch (error) {
+                    perfContent.innerHTML = '<div class="rounded-2xl bg-red-500/10 p-4 text-red-100 ring-1 ring-red-400/20">' + escapeHtml(formatError(error)) + '</div>';
+                }
+            }
+
+            await refreshPerf();
+            clearInterval(window._perfInterval);
+            window._perfInterval = setInterval(refreshPerf, 5000);
+        }
+
+        async function getResources(server) {
+            if (server.driver === "pterodactyl") {
+                requireFields(server, ["pteroBaseUrl", "pteroServerId", "pteroToken"]);
+                const url = `${server.pteroBaseUrl}/api/client/servers/${encodeURIComponent(server.pteroServerId)}/resources`;
+                const response = await safeFetch(url, {
+                    method: "GET",
+                    headers: pteroHeaders(server.pteroToken, false)
+                }, "Pterodactyl risorse");
+                const data = await consumeResponse(response);
+                const res = data?.attributes?.resources || data?.resources || {};
+                const state = data?.attributes?.current_state || data?.current_state || "unknown";
+
+                const cpu = res.cpu_absolute ?? res.cpu ?? 0;
+                const mem = res.memory_bytes ?? res.memory ?? 0;
+                const disk = res.disk_bytes ?? res.disk ?? 0;
+                const netRx = res.network_rx_bytes ?? res.network_rx ?? 0;
+                const netTx = res.network_tx_bytes ?? res.network_tx ?? 0;
+                const maxMem = server.pteroMaxMem || null;
+
+                return { html: renderPerfHtml(state, cpu, mem, disk, netRx, netTx, maxMem) };
+            }
+
+            if (!server.customStatusUrl) throw new Error("Endpoint status/risorse mancante nelle impostazioni server.");
+            const response = await safeFetch(server.customStatusUrl, buildCustomRequest(server, server.customStatusMethod || "GET", ""), "Custom risorse");
+            const data = await consumeResponse(response);
+            const res = server.customStatusPath ? getByPath(data, server.customStatusPath) : data;
+            return { html: "<pre class=\"whitespace-pre-wrap text-xs text-slate-200\">" + escapeHtml(JSON.stringify(data, null, 2)) + "</pre>" };
+        }
+
+        function renderPerfHtml(state, cpu, mem, disk, netRx, netTx, maxMem) {
+            const st = statusLabel(state);
+            const memPct = maxMem ? Math.round((mem / maxMem) * 100) : null;
+            const cpuPct = Math.round(Number(cpu) || 0);
+
+            return `
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="rounded-full ${st.className} px-3 py-1 text-xs font-bold uppercase tracking-wide">${st.text}</span>
+                    <span class="text-xs text-slate-400">Aggiornamento automatico ogni 5s</span>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    ${barCard("CPU", cpuPct, 100, cpuPct + "%", cpuPct > 80 ? "text-red-300" : "text-emerald-300")}
+                    ${barCard("RAM", memPct, 100, formatBytes(mem) + (maxMem ? " / " + formatBytes(maxMem) : ""), (memPct !== null && memPct > 80) ? "text-red-300" : "text-sky-300")}
+                    ${simpleCard("Disco", formatBytes(disk), "text-amber-300")}
+                    ${simpleCard("Rete", formatBytes(netRx) + " ricevuti / " + formatBytes(netTx) + " inviati", "text-purple-300")}
+                </div>
+            `;
+        }
+
+        function barCard(label, pct, max, valueText, colorClass) {
+            const pctSafe = Math.min(100, Math.max(0, Number(pct) || 0));
+            const barColor = pctSafe > 80 ? "bg-red-400" : pctSafe > 50 ? "bg-amber-400" : "bg-emerald-400";
+            return `
+                <div class="rounded-2xl bg-slate-950/60 p-4 ring-1 ring-slate-700">
+                    <p class="text-xs font-semibold text-slate-400">${label}</p>
+                    <p class="mt-1 text-lg font-bold ${colorClass}">${valueText}</p>
+                    <div class="mt-2 h-2 w-full rounded-full bg-slate-800">
+                        <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width:${pctSafe}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function simpleCard(label, valueText, colorClass) {
+            return `
+                <div class="rounded-2xl bg-slate-950/60 p-4 ring-1 ring-slate-700">
+                    <p class="text-xs font-semibold text-slate-400">${label}</p>
+                    <p class="mt-1 text-lg font-bold ${colorClass}">${valueText}</p>
+                </div>
+            `;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0 || bytes == null) return "0 B";
+            const units = ["B", "KB", "MB", "GB", "TB"];
+            const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + " " + units[i];
+        }
+
+        async function showLogs(id) {
+            const server = findServer(id);
+            if (!server) return;
+
+            const logModal = document.getElementById("logModal");
+            const logTitle = document.getElementById("logTitle");
+            const logStatus = document.getElementById("logStatus");
+            const logOutput = document.getElementById("logOutput");
+            const logDirectLink = document.getElementById("logDirectLink");
+
+            logTitle.textContent = "Ultimo log: " + server.name;
+            logStatus.textContent = "Caricamento ultimo log...";
+            logOutput.textContent = "";
+            logModal.classList.remove("hidden");
+            logModal.classList.add("flex");
+
+            if (server.logUrl) {
+                logDirectLink.href = server.logUrl;
+                logDirectLink.classList.remove("hidden");
+            } else {
+                logDirectLink.classList.add("hidden");
+            }
+
+            try {
+                if (server.driver !== "pterodactyl") throw new Error("Lettura log via API disponibile solo con Pterodactyl/Pelican.");
+                requireFields(server, ["pteroBaseUrl", "pteroServerId", "pteroToken"]);
+                const filePath = "/logs/latest.log";
+                const url = `${server.pteroBaseUrl}/api/client/servers/${encodeURIComponent(server.pteroServerId)}/files/contents?file=${encodeURIComponent(filePath)}`;
+                const response = await safeFetch(url, {
+                    method: "GET",
+                    headers: pteroHeaders(server.pteroToken, false)
+                }, "Pterodactyl ultimo log");
+                const text = await response.text();
+                if (!response.ok) throw new Error(`API HTTP ${response.status}: ${text || response.statusText}`);
+                logOutput.textContent = stripAnsi(text || "Log vuoto.");
+                logStatus.textContent = "Log caricato via API: " + filePath;
+            } catch (error) {
+                logStatus.textContent = "Impossibile leggere il log via API.";
+                const fallback = server.logUrl
+                    ? "Usa il pulsante Apri log diretto in alto."
+                    : "Aggiungi un Link diretto all'ultimo log nelle impostazioni del server.";
+                logOutput.textContent = formatError(error) + "\n\n" + fallback;
+            }
+        }
+
+        function closeLogModal() {
+            document.getElementById("logModal").classList.add("hidden");
+            document.getElementById("logModal").classList.remove("flex");
+        }
+
+        let activeConsoleWs = null;
+        let activeConsoleServer = null;
+        let consoleTokenRefreshing = false;
+
+        function stripAnsi(text) {
+            return String(text || "").replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "").replace(/\x1b\][^\x07]*\x07/g, "");
+        }
+
+        async function showConsole(id) {
+            const server = findServer(id);
+            if (!server) return;
+
+            const consoleModal = document.getElementById("consoleModal");
+            const consoleTitle = document.getElementById("consoleTitle");
+            const consoleStatus = document.getElementById("consoleStatus");
+            const consoleOutput = document.getElementById("consoleOutput");
+            const consoleDirectLink = document.getElementById("consoleDirectLink");
+
+            consoleTitle.textContent = "Console: " + server.name;
+            consoleOutput.innerHTML = "";
+            consoleStatus.textContent = "Apertura...";
+            consoleModal.classList.remove("hidden");
+            consoleModal.classList.add("flex");
+
+            const directLink = server.consoleUrl || server.panelUrl;
+            if (directLink) {
+                consoleDirectLink.href = directLink;
+                consoleDirectLink.classList.remove("hidden");
+            } else {
+                consoleDirectLink.classList.add("hidden");
+            }
+
+            if (server.driver !== "pterodactyl") {
+                consoleStatus.textContent = "Console live disponibile solo con API Pterodactyl/Pelican.";
+                let html = '<p class="text-amber-300">Console live non disponibile per API personalizzata.</p>';
+                if (directLink) html += `<p class="mt-3 text-slate-400">Apri la console direttamente nel pannello: </p><p class="mt-1"><a href="${escapeHtml(directLink)}" target="_blank" rel="noreferrer" class="text-purple-200 underline">${escapeHtml(directLink)}</a></p>`;
+                consoleOutput.innerHTML = html;
+                return;
+            }
+
+            try {
+                requireFields(server, ["pteroBaseUrl", "pteroServerId", "pteroToken"]);
+                activeConsoleServer = server;
+                await connectConsoleWs(server);
+            } catch (error) {
+                consoleStatus.textContent = "Errore: " + formatError(error);
+                let html = `<p class="text-red-300">${escapeHtml(formatError(error))}</p>`;
+                if (directLink) html += `<p class="mt-3 text-slate-400">Apri la console direttamente nel pannello:</p><p class="mt-1"><a href="${escapeHtml(directLink)}" target="_blank" rel="noreferrer" class="text-purple-200 underline">${escapeHtml(directLink)}</a></p>`;
+                consoleOutput.innerHTML = html;
+            }
+        }
+
+        async function fetchWsCredentials(server) {
+            const url = `${server.pteroBaseUrl}/api/client/servers/${encodeURIComponent(server.pteroServerId)}/websocket`;
+            const response = await safeFetch(url, {
+                method: "GET",
+                headers: pteroHeaders(server.pteroToken, false)
+            }, "Pterodactyl websocket credentials");
+            const data = await consumeResponse(response);
+            const socket = data?.data?.socket || data?.socket;
+            const token = data?.data?.token || data?.token;
+            if (!socket || !token) throw new Error("Risposta WebSocket non valida dal pannello.");
+            return { socket, token };
+        }
+
+        async function connectConsoleWs(server) {
+            const consoleStatus = document.getElementById("consoleStatus");
+            const consoleOutput = document.getElementById("consoleOutput");
+
+            consoleStatus.textContent = "Richiesta credenziali WebSocket...";
+            const { socket, token } = await fetchWsCredentials(server);
+
+            consoleStatus.textContent = "Apertura WebSocket: " + socket;
+
+            if (activeConsoleWs) {
+                try { activeConsoleWs.close(); } catch (e) {}
+                activeConsoleWs = null;
+            }
+
+            const ws = new WebSocket(socket);
+            activeConsoleWs = ws;
+
+            ws.addEventListener("open", () => {
+                consoleStatus.textContent = "Connesso. Autenticazione...";
+                ws.send(JSON.stringify({ event: "auth", args: [token] }));
+            });
+
+            ws.addEventListener("message", (event) => {
+                let msg;
+                try { msg = JSON.parse(event.data); } catch (e) { return; }
+                const ev = msg.event;
+                const args = msg.args || [];
+
+                if (ev === "auth success") {
+                    consoleStatus.textContent = "Connesso e autenticato. Caricamento log...";
+                    ws.send(JSON.stringify({ event: "send logs", args: [null] }));
+                    ws.send(JSON.stringify({ event: "send stats", args: [null] }));
+                } else if (ev === "console output" || ev === "install output" || ev === "daemon message") {
+                    appendConsoleLine(args[0], consoleOutput);
+                } else if (ev === "status") {
+                    const st = args[0] || "?";
+                    consoleStatus.textContent = "Stato: " + st;
+                } else if (ev === "stats") {
+                    try {
+                        const stats = JSON.parse(args[0]);
+                        consoleStatus.textContent = "Stato: " + (stats.state || "?") + " | CPU: " + (Number(stats.cpu_absolute) || 0).toFixed(0) + "% | RAM: " + formatBytes(stats.memory_bytes || 0);
+                    } catch (e) {}
+                } else if (ev === "token expiring") {
+                    refreshConsoleToken(server);
+                } else if (ev === "token expired" || ev === "jwt error" || ev === "daemon error") {
+                    consoleStatus.textContent = "Token scaduto, rinnovo in corso...";
+                    refreshConsoleToken(server);
+                }
+            });
+
+            ws.addEventListener("error", () => {
+                consoleStatus.textContent = "Errore WebSocket. Probabile blocco origine file:// dal daemon. Usa il link diretto al pannello.";
+            });
+
+            ws.addEventListener("close", (event) => {
+                if (activeConsoleWs === ws) {
+                    consoleStatus.textContent = "Connessione chiusa" + (event.code ? " (codice " + event.code + ")" : "") + ".";
+                    activeConsoleWs = null;
+                }
+            });
+        }
+
+        async function refreshConsoleToken(server) {
+            if (consoleTokenRefreshing || !activeConsoleWs) return;
+            consoleTokenRefreshing = true;
+            try {
+                const { token } = await fetchWsCredentials(server);
+                if (activeConsoleWs && activeConsoleWs.readyState === 1) {
+                    activeConsoleWs.send(JSON.stringify({ event: "auth", args: [token] }));
+                }
+            } catch (error) {
+                document.getElementById("consoleStatus").textContent = "Impossibile rinnovare il token: " + formatError(error);
+            } finally {
+                consoleTokenRefreshing = false;
+            }
+        }
+
+        function appendConsoleLine(text, container) {
+            const line = document.createElement("div");
+            line.textContent = stripAnsi(text);
+            container.appendChild(line);
+            if (container.childElementCount > 2000) container.removeChild(container.firstChild);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendConsoleCmd() {
+            const input = document.getElementById("consoleCmd");
+            const cmd = input.value.trim();
+            if (!cmd) return;
+            if (!activeConsoleWs || activeConsoleWs.readyState !== 1) {
+                document.getElementById("consoleStatus").textContent = "WebSocket non connesso, impossibile inviare comandi.";
+                return;
+            }
+            activeConsoleWs.send(JSON.stringify({ event: "send command", args: [cmd] }));
+            input.value = "";
+        }
+
+        function closeConsole() {
+            if (activeConsoleWs) {
+                try { activeConsoleWs.close(); } catch (e) {}
+                activeConsoleWs = null;
+            }
+            activeConsoleServer = null;
+            document.getElementById("consoleModal").classList.add("hidden");
+            document.getElementById("consoleModal").classList.remove("flex");
+        }
+
+        window.startServer = startServer;
+        window.stopServer = stopServer;
+        window.restartServer = restartServer;
+        window.renewServer = renewServer;
+        window.statusServer = statusServer;
+        window.showPerformance = showPerformance;
+        window.showConsole = showConsole;
+        window.showLogs = showLogs;
+        window.closeLogModal = closeLogModal;
+        window.editServer = editServer;
+        window.deleteServer = deleteServer;
+        window.closeConsole = closeConsole;
+        window.sendConsoleCmd = sendConsoleCmd;
+    </script>
+</body>
+</html>
