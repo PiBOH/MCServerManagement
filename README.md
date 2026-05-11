@@ -3,7 +3,7 @@
 ![Windows](https://img.shields.io/badge/Windows-ffffff?logo=windows&style=flat&color=140e0e&logoColor=0190f9)
 ![MacOS](https://img.shields.io/badge/MacOS-ffffff?logo=macos&style=flat&color=000000&logoColor=ff5000)
 ![On-line](https://img.shields.io/badge/On--line-ffffff?logo=googlechrome&style=flat&color=000000&logoColor=4285f4)
-[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 
 
 ![GitHub Release](https://img.shields.io/github/v/release/PiBOH/MCServerManagement?cacheSeconds=10&link=https%3A%2F%2Fgithub.com%2FPiBOH%2FCodeLearn%2Freleases)
