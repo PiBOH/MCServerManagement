@@ -1,4 +1,4 @@
-[![HTML](https://img.shields.io/badge/HTML-ffffff?logo=html5&style=flat&color=ffffff&logoColor=E34F26)](https://html.com/)
+[![HTML5](https://img.shields.io/badge/HTML5-ffffff?logo=html5&style=flat&color=0a0808&logoColor=E34F26)](https://html.com/)
 ![Android 14+](https://img.shields.io/badge/Android%2014+-ffffff?logo=android&style=flat&color=0a0808&logoColor=3DDC84)
 ![Windows](https://img.shields.io/badge/Windows-ffffff?logo=windows&style=flat&color=140e0e&logoColor=0190f9)
 ![MacOS](https://img.shields.io/badge/MacOS-ffffff?logo=macos&style=flat&color=000000&logoColor=ff5000)
