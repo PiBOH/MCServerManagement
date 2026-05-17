@@ -7,7 +7,7 @@
 
 
 
-![GitHub Release](https://img.shields.io/github/v/release/PiBOH/MCServerManagement?cacheSeconds=10&link=https%3A%2F%2Fgithub.com%2FPiBOH%2FCodeLearn%2Freleases)
+[![GitHub Release](https://img.shields.io/github/v/release/PiBOH/MCServerManagement?cacheSeconds=10&link=https%3A%2F%2Fgithub.com%2FPiBOH%2FCodeLearn%2Freleases)](https://github.com/PiBOH/MCServerManagement/releases)
 ![GitHub Release Date](https://img.shields.io/github/release-date/PiBOH/MCServerManagement?display_date=published_at&style=flat)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/PiBOH/MCServerManagement/total?style=flat&logo=GitHub&cacheSeconds=1)
 ![GitHub forks](https://img.shields.io/github/forks/PiBOH/MCServerManagement?style=social&logo=GitHub&cacheSeconds=5)
